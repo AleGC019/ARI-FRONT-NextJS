@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Settings, Key, Type, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, Settings, Key, Type, AlertTriangle, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,10 +93,16 @@ export function DelimiterAndKeyForm() {
     updateConfig({ encryptionKey: newKey });
   };
 
+  // 🎯 NUEVO: Solo mostrar cuando el flujo esté completo
+  const isReadyForConfiguration = !!(
+    sourceFile.file && 
+    sourceFile.content && 
+    config.destinationPath
+  );
+
   return (
     <>
-      {/* Solo mostrar cuando hay un archivo de origen */}
-      {sourceFile.file ? (
+      {isReadyForConfiguration ? (
         <Card className="glass-card glass-hover border-green-border/20 bg-green-dark/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-lg">
@@ -330,15 +336,27 @@ export function DelimiterAndKeyForm() {
               <div>
                 <div className="text-foreground">Configuración</div>
                 <div className="text-sm font-normal text-muted-foreground">
-                  Esperando archivo para configurar
+                  Esperando archivo y carpeta de destino
                 </div>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center py-8">
-            <div className="text-center text-muted-foreground">
-              <div className="h-2 w-2 rounded-full bg-muted-foreground/50 mx-auto mb-2"></div>
-              <span className="text-sm">Sube un archivo para configurar las opciones</span>
+            <div className="text-center text-muted-foreground space-y-3">
+              <AlertCircle className="h-8 w-8 mx-auto text-orange-500" />
+              <div className="space-y-1">
+                <span className="text-sm block">Completa los pasos anteriores:</span>
+                <div className="text-xs space-y-1">
+                  <div className={`flex items-center gap-2 justify-center ${sourceFile.file ? 'text-green-400' : 'text-orange-400'}`}>
+                    {sourceFile.file ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                    <span>Subir archivo de origen</span>
+                  </div>
+                  <div className={`flex items-center gap-2 justify-center ${config.destinationPath ? 'text-green-400' : 'text-orange-400'}`}>
+                    {config.destinationPath ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                    <span>Seleccionar carpeta de destino</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

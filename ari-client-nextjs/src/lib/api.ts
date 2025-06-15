@@ -59,33 +59,22 @@ class ApiService {
 
   async uploadFile(file: File): Promise<UploadResponse> {
   try {
-    console.log("📡 API uploadFile llamado con:", file.name, file.type);
-    
     const format = this.detectFileFormat(file);
-    console.log("🔍 Formato detectado:", format);
     
-    // Leer contenido del archivo
     const content = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        console.log("📖 Contenido leído:", result.length, "caracteres");
         resolve(result);
       };
       reader.onerror = () => reject(new Error('Error al leer el archivo'));
       reader.readAsText(file);
     });
 
-    // Validar que el contenido sea válido según el formato
     this.validateFileContent(content, format);
-    console.log("✅ Contenido validado correctamente");
 
-    return {
-      content,
-      format,
-    };
+    return { content, format };
   } catch (error) {
-    console.error("❌ Error en uploadFile:", error);
     throw new Error(`Error al procesar archivo: ${error instanceof Error ? error.message : 'Error desconocido'}`);
   }
   }
@@ -236,10 +225,7 @@ class ApiService {
       const writableStream = await fileHandle.createWritable();
       await writableStream.write(blob);
       await writableStream.close();
-
-      console.log(`✅ Archivo guardado en: ${directoryHandle.name}/${filename}.${format}`);
     } catch (error) {
-      console.error('Error al guardar en carpeta seleccionada:', error);
       throw error;
     }
   }

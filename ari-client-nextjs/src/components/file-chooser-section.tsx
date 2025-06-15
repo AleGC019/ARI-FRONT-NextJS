@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileUp, FolderOpen } from "lucide-react";
+import { FileUp, FolderOpen, CheckCircle2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileUploader, type FileUpload } from "@/components/file-uploader";
 import { Button } from "@/components/ui/button";
@@ -40,11 +40,9 @@ export function FileChooserSection() {
 
   const handleSelectDestinationFolder = async () => {
     try {
-      // 🎯 VERIFICACIÓN MÁS ROBUSTA
       if ('showDirectoryPicker' in window && typeof window.showDirectoryPicker === 'function') {
         const directoryHandle = await window.showDirectoryPicker!();
         
-        // 🎯 USAR LA NUEVA FUNCIÓN DEL STORE
         setDestinationFolder(directoryHandle, directoryHandle.name);
         
         toast.success("Carpeta seleccionada", {
@@ -58,7 +56,6 @@ export function FileChooserSection() {
     } catch (error) {
       const err = error as Error;
       if (err.name !== 'AbortError') {
-        console.error("Error al seleccionar carpeta:", err);
         toast.error("Error al seleccionar carpeta", {
           description: "No se pudo acceder al selector de carpetas",
         });
@@ -73,6 +70,11 @@ export function FileChooserSection() {
     });
   };
 
+  // 🎯 ESTADO DEL FLUJO SECUENCIAL
+  const isFileUploaded = !!(sourceFile?.file && sourceFile?.content);
+  const isFolderSelected = !!config.destinationPath;
+  const canProceedToConfiguration = isFileUploaded && isFolderSelected;
+
   return (
     <Card className="glass-card glass-hover border-green-border/20 bg-green-dark/20">
       <CardHeader>
@@ -83,77 +85,93 @@ export function FileChooserSection() {
           <div>
             <div className="text-foreground">Selección de Archivos y Destino</div>
             <div className="text-sm font-normal text-muted-foreground">
-              Carga tu archivo y selecciona dónde guardar el resultado
+              {canProceedToConfiguration 
+                ? "✅ Todo configurado - puedes continuar con la configuración"
+                : "Completa ambos pasos para continuar"
+              }
             </div>
           </div>
         </CardTitle>
       </CardHeader>
       
-      {/* Archivo Origen */}
+      {/* Paso 1: Archivo Origen */}
       <CardContent className="space-y-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-light"></div>
+            <div className={`h-3 w-3 rounded-full transition-colors ${
+              isFileUploaded ? 'bg-green-light' : 'bg-orange-500'
+            }`}></div>
             <label className="text-sm font-medium text-foreground">
-              Archivo origen
+              Paso 1: Archivo origen
             </label>
             <div className="text-xs text-muted-foreground ml-auto">
-              {config.sourceFormat ? `Formato: ${config.sourceFormat.toUpperCase()}` : 'Formato: Pendiente'}
+              {config.sourceFormat ? `Formato: ${config.sourceFormat.toUpperCase()}` : 'Requerido'}
             </div>
           </div>
+          
           <FileUploader
             onFileUploaded={handleSourceFileUpload}
             label="archivo origen"
             acceptedTypes={["txt", "json", "xml"]}
             maxSize={10}
           />
-        </div>
 
-        {/* Estado del archivo */}
-        <div className="flex items-center justify-center gap-6 pt-4 border-t border-green-border/20">
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-3 w-3 rounded-full transition-colors ${
-                sourceFile ? "bg-green-light animate-pulse" : "bg-muted-foreground/30"
-              }`}
-            ></div>
-            <span className="text-xs text-muted-foreground">
-              {sourceFile ? `Archivo listo (${sourceFile.file.name})` : 'Esperando archivo'}
-            </span>
+          {/* Estado del archivo */}
+          <div className="flex items-center justify-center gap-6 pt-4 border-t border-green-border/20">
+            <div className="flex items-center gap-2">
+              {isFileUploaded ? (
+                <CheckCircle2 className="h-4 w-4 text-green-light" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-orange-500" />
+              )}
+              <span className="text-xs text-muted-foreground">
+                {isFileUploaded 
+                  ? `Archivo cargado: ${sourceFile?.file.name}` 
+                  : 'Archivo requerido para continuar'
+                }
+              </span>
+            </div>
+            
+            {isFileUploaded && (
+              <>
+                <div className="h-px w-8 bg-green-light/30"></div>
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                  <span className="text-xs text-muted-foreground">
+                    {(sourceFile!.file.size / 1024).toFixed(1)} KB procesado
+                  </span>
+                </div>
+              </>
+            )}
           </div>
-          
-          {sourceFile && (
-            <>
-              <div className="h-px w-8 bg-green-light/30"></div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                <span className="text-xs text-muted-foreground">
-                  {(sourceFile.file.size / 1024).toFixed(1)} KB procesado
-                </span>
-              </div>
-            </>
-          )}
         </div>
       </CardContent>
 
-      {/* Carpeta de Destino */}
-      <CardContent className="space-y-6 border-t border-green-border/20">
+      {/* Paso 2: Carpeta de Destino */}
+      <CardContent className={`space-y-6 border-t border-green-border/20 transition-opacity ${
+        isFileUploaded ? 'opacity-100' : 'opacity-50'
+      }`}>
         <div className="space-y-4">
           <div className="flex items-center gap-2 mt-4">
-            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+            <div className={`h-3 w-3 rounded-full transition-colors ${
+              isFolderSelected ? 'bg-green-light' : isFileUploaded ? 'bg-orange-500' : 'bg-muted-foreground/50'
+            }`}></div>
             <label className="text-sm font-medium text-foreground">
-              Carpeta de destino
+              Paso 2: Carpeta de destino
             </label>
             <div className="text-xs text-muted-foreground ml-auto">
-              {config.destinationPath ? 'Configurado' : 'Opcional'}
+              {isFolderSelected ? 'Configurado' : isFileUploaded ? 'Requerido' : 'Esperando archivo'}
             </div>
           </div>
           
           <div className="space-y-3">
-            {/* Campo de solo lectura para mostrar la carpeta seleccionada */}
             <Input
               value={config.destinationPath || ''}
-              placeholder="Ninguna carpeta seleccionada - se descargará automáticamente"
+              placeholder={
+                isFileUploaded 
+                  ? "Selecciona una carpeta para guardar el archivo convertido"
+                  : "Primero sube un archivo"
+              }
               className="bg-card/50 border-green-border/30 text-muted-foreground cursor-not-allowed"
               readOnly
             />
@@ -163,7 +181,12 @@ export function FileChooserSection() {
                 type="button"
                 variant="outline"
                 onClick={handleSelectDestinationFolder}
-                className="flex-1 border-blue-500/30 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                disabled={!isFileUploaded}
+                className={`flex-1 transition-all ${
+                  isFileUploaded
+                    ? 'border-blue-500/30 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10'
+                    : 'border-muted-foreground/30 text-muted-foreground cursor-not-allowed'
+                }`}
               >
                 <FolderOpen className="h-4 w-4 mr-2" />
                 Seleccionar carpeta

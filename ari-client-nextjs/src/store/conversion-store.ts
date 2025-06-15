@@ -12,8 +12,8 @@ export interface ConversionConfig {
   encryptionKey: string;
   sourceFormat: 'txt' | 'json' | 'xml' | null;
   targetFormat: 'txt' | 'json' | 'xml' | null;
-  destinationPath?: string; // Solo lectura, muestra la carpeta seleccionada
-  directoryHandle?: FileSystemDirectoryHandle | null; // Handle para guardar archivos
+  destinationPath?: string;
+  directoryHandle?: FileSystemDirectoryHandle | null;
 }
 
 export interface ConversionState {
@@ -33,12 +33,11 @@ export interface ConversionState {
   setIsUploading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearAll: () => void;
-  getDebugInfo: () => string;
 }
 
 export const useConversionStore = create<ConversionState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       sourceFile: {
         file: null,
         content: '',
@@ -47,7 +46,7 @@ export const useConversionStore = create<ConversionState>()(
       outputData: '',
       config: {
         delimiter: ',',
-        encryptionKey: 'default-key',
+        encryptionKey: '',
         sourceFormat: null,
         targetFormat: null,
         destinationPath: '',
@@ -103,7 +102,7 @@ export const useConversionStore = create<ConversionState>()(
           outputData: '',
           config: {
             delimiter: ',',
-            encryptionKey: 'default-key',
+            encryptionKey: '',
             sourceFormat: null,
             targetFormat: null,
             destinationPath: '',
@@ -113,22 +112,11 @@ export const useConversionStore = create<ConversionState>()(
           isUploading: false,
           error: null,
         })),
-
-      getDebugInfo: () => {
-        const state = get();
-        return JSON.stringify({
-          hasFile: !!state.sourceFile.file,
-          hasContent: !!state.sourceFile.content,
-          sourceFormat: state.config.sourceFormat,
-          targetFormat: state.config.targetFormat,
-          delimiter: state.config.delimiter,
-          encryptionKey: state.config.encryptionKey,
-          destinationPath: state.config.destinationPath,
-          hasDirectoryHandle: !!state.config.directoryHandle,
-          isConverting: state.isConverting,
-        }, null, 2);
-      },
     }),
-    { name: 'conversion-store' }
+    { 
+      name: 'conversion-store',
+      // 🔒 SEGURIDAD: Solo en desarrollo
+      enabled: process.env.NODE_ENV === 'development'
+    }
   )
 );

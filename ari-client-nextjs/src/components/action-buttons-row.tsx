@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Download, Sparkles, Zap, Trash2, Bug } from "lucide-react";
+import { Play, Download, Sparkles, Zap, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useConversionStore } from "@/store/conversion-store";
@@ -17,7 +17,6 @@ export function ActionButtonsRow() {
     setOutputData,
     setError,
     clearAll,
-    getDebugInfo,
   } = useConversionStore();
 
   const validateConversion = (): string | null => {
@@ -33,7 +32,20 @@ export function ActionButtonsRow() {
       return "Los formatos de origen y destino deben ser diferentes";
     }
 
-    // Validar conversiones específicas soportadas por tu API
+    // 🔒 SEGURIDAD: Validar clave de cifrado
+    if (!config.encryptionKey || config.encryptionKey.trim() === '') {
+      return "Por favor ingresa una clave de cifrado";
+    }
+
+    if (config.encryptionKey === 'default-key') {
+      return "Por favor cambia la clave de cifrado por defecto por una personalizada";
+    }
+
+    if (config.encryptionKey.length < 8) {
+      return "La clave de cifrado debe tener al menos 8 caracteres";
+    }
+
+    // Validar conversiones específicas soportadas
     const validConversions = [
       'txt-json', 'txt-xml', 'json-txt', 'xml-txt'
     ];
@@ -43,25 +55,7 @@ export function ActionButtonsRow() {
       return `Conversión no soportada: ${config.sourceFormat.toUpperCase()} → ${config.targetFormat.toUpperCase()}`;
     }
 
-    // Validar parámetros requeridos SOLO si son necesarios
-    if (config.sourceFormat === 'txt' && (!config.delimiter || !config.encryptionKey)) {
-      return "Para conversiones desde TXT se requiere delimiter y clave de encriptación";
-    }
-
-    if ((config.sourceFormat === 'json' || config.sourceFormat === 'xml') && 
-        config.targetFormat === 'txt' && (!config.encryptionKey || !config.delimiter)) {
-      return "Para conversiones a TXT se requiere clave de encriptación y delimiter";
-    }
-
     return null;
-  };
-
-  const handleDebug = () => {
-    const debugInfo = getDebugInfo();
-    console.log("🐛 Debug Info:", debugInfo);
-    toast.info("Debug info logged to console", {
-      description: "Check the browser console for details",
-    });
   };
 
   const handleConvert = async () => {
@@ -80,13 +74,13 @@ export function ActionButtonsRow() {
         targetFormat: config.targetFormat!,
         file: sourceFile.file!,
         delimiter: config.delimiter || ',',
-        encryptionKey: config.encryptionKey || 'default-key',
+        encryptionKey: config.encryptionKey!,
       });
 
       if (response.success && response.data) {
         setOutputData(response.data);
         toast.success("¡Conversión exitosa!", {
-          description: `Archivo convertido de ${config.sourceFormat!.toUpperCase()} a ${config.targetFormat!.toUpperCase()}. Revisa la vista previa abajo`,
+          description: `Archivo convertido de ${config.sourceFormat!.toUpperCase()} a ${config.targetFormat!.toUpperCase()}`,
         });
       } else {
         throw new Error(response.error || "Error desconocido en la conversión");
@@ -117,7 +111,6 @@ export function ActionButtonsRow() {
     try {
       const filename = sourceFile.file?.name?.split('.')[0] || 'converted_file';
       
-      // 🎯 USAR EL DIRECTORYHANDLE DEL STORE
       await apiService.downloadFile(
         outputData, 
         filename, 
@@ -163,37 +156,14 @@ export function ActionButtonsRow() {
             <Zap className="h-5 w-5 text-green-light" />
           </div>
           <div>
-            <div className="text-foreground">Control Actions</div>
+            <div className="text-foreground">Acciones de Control</div>
             <div className="text-sm font-normal text-muted-foreground">
-              Execute conversion operations
+              Ejecuta operaciones de conversión
             </div>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Estado de Debug (temporal) */}
-        <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-          <div className="text-xs text-muted-foreground space-y-1">
-            <p>📁 Archivo: {sourceFile.file ? '✅' : '❌'} ({sourceFile.file?.name})</p>
-            <p>📄 Contenido: {sourceFile.content ? '✅' : '❌'} ({sourceFile.content.length} chars)</p>
-            <p>🔤 Formato origen: {config.sourceFormat || '❌'}</p>
-            <p>🎯 Formato destino: {config.targetFormat || '❌'}</p>
-            <p>📝 Delimiter: {config.delimiter || '❌'}</p>
-            <p>🔐 Key: {config.encryptionKey || '❌'}</p>
-            <p>⚡ Can Convert: {canConvert ? '✅' : '❌'}</p>
-            {validationMessage && <p className="text-yellow-500">⚠️ {validationMessage}</p>}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDebug}
-            className="mt-2"
-          >
-            <Bug className="h-4 w-4 mr-2" />
-            Debug Info
-          </Button>
-        </div>
-
         <div className="flex flex-wrap gap-4 justify-center items-center">
           <Button
             onClick={handleConvert}
