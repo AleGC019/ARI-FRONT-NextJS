@@ -147,7 +147,7 @@ export default function Home() {
           </BlurFade>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-5 gap-12">
+          <div className="grid grid-cols-1 gap-12 w-full">
             {/* Left Panel - File Operations */}
             <div className="xl:col-span-4 space-y-16">
               {/* Step 1: File Selection */}
@@ -201,8 +201,9 @@ export default function Home() {
 
                   {/* Configuration Layout */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <DelimiterAndKeyForm />
                     <ConversionDirectionSelector />
+                    <DelimiterAndKeyForm />
+                
                   </div>
                 </div>
               </BlurFade>
