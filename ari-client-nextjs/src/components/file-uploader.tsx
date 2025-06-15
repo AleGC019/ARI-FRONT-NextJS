@@ -60,8 +60,7 @@ export const FileUploader = ({
   // 🔄 SINCRONIZAR CON EL STORE - Limpiar estado local cuando el store se limpia
   useEffect(() => {
     if (!sourceFile.file) {
-      console.log("🧹 Store limpiado - actualizando estado local del FileUploader");
-      setPreview(null);
+       setPreview(null);
       setIsUploaded(false);
       setUploadError(null);
     }
@@ -69,16 +68,13 @@ export const FileUploader = ({
 
   // 🔧 FUNCIÓN PRINCIPAL DE PROCESAMIENTO CON API
   const processFileWithAPI = useCallback(async (file: File) => {
-    console.log("🚀 Procesando archivo:", file.name);
     setIsUploading(true);
     setUploadError(null);
     setIsUploaded(false);
 
     try {
       // Usar la API para procesar el archivo
-      console.log("📡 Llamando a apiService.uploadFile...");
       const result = await apiService.uploadFile(file);
-      console.log("✅ Resultado de API:", result);
       
       const fileDetails: FileDetails = {
         file,
@@ -93,7 +89,6 @@ export const FileUploader = ({
       setIsUploaded(true);
       
       // 🎯 ACTUALIZAR EL STORE GLOBAL
-      console.log("🏪 Actualizando store con:", { file, content: result.content, format: result.format });
       setSourceFile(file, result.content, result.format);
       
       // Callback para componente padre
@@ -104,7 +99,6 @@ export const FileUploader = ({
       });
 
     } catch (error) {
-      console.error("❌ Error procesando archivo:", error);
       const errorMessage = error instanceof Error ? error.message : 'Error al procesar el archivo';
       setUploadError(errorMessage);
       setError(errorMessage);
@@ -123,10 +117,7 @@ export const FileUploader = ({
       const file = acceptedFiles[0];
       if (!file) return;
 
-      console.log("📂 Archivo seleccionado:", file.name, file.size, file.type);
-
-      // Validar tamaño
-      if (file.size > maxSize * 1024 * 1024) {
+     if (file.size > maxSize * 1024 * 1024) {
         const error = `El archivo es demasiado grande. Máximo ${maxSize}MB permitido.`;
         setUploadError(error);
         toast.error("Archivo demasiado grande", {
@@ -164,8 +155,6 @@ export const FileUploader = ({
   });
 
   const handleRemoveFile = () => {
-    console.log("🗑️ Removiendo archivo y limpiando store...");
-    
     // Limpiar estado local
     setPreview(null);
     setIsUploaded(false);
@@ -177,7 +166,6 @@ export const FileUploader = ({
     // 🎯 LIMPIAR EL STORE COMPLETAMENTE
     clearAll();
     
-    console.log("✅ Store limpiado completamente");
     toast.info("Archivo removido");
   };
 

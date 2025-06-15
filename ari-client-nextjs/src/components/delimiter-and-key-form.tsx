@@ -38,7 +38,6 @@ export function DelimiterAndKeyForm() {
 
   // 🔧 SINCRONIZAR CON EL STORE
   useEffect(() => {
-    console.log("🔄 DelimiterAndKeyForm: Sincronizando con store:", { delimiter: config.delimiter, key: config.encryptionKey });
     setDelimiter(config.delimiter || ",");
     setEncryptionKey(config.encryptionKey || "");
   }, [config.delimiter, config.encryptionKey]);
@@ -50,7 +49,6 @@ export function DelimiterAndKeyForm() {
                                      (config.sourceFormat === 'json' || config.sourceFormat === 'xml');
     
     if (isCurrentlyToTxtConversion && delimiter && !ALLOWED_DELIMITERS_FOR_TO_TXT.includes(delimiter)) {
-      console.warn("⚠️ Delimiter actual no es válido para conversión a TXT, reseteando a ';'");
       const defaultValidDelimiter = ";";
       setDelimiter(defaultValidDelimiter);
       updateConfig({ delimiter: defaultValidDelimiter });
@@ -60,7 +58,6 @@ export function DelimiterAndKeyForm() {
   // 🧹 RESETEAR CAMPOS CUANDO NO HAY ARCHIVO DE ORIGEN
   useEffect(() => {
     if (!sourceFile.file) {
-      console.log("🧹 DelimiterAndKeyForm: No hay archivo de origen, reseteando campos");
       // Resetear a valores por defecto cuando no hay archivo
       setDelimiter(",");
       setEncryptionKey("");
@@ -72,11 +69,9 @@ export function DelimiterAndKeyForm() {
   // 🎯 MANEJAR CAMBIOS Y ACTUALIZAR STORE
   const handleDelimiterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDelimiter = e.target.value.slice(0, 3);
-    console.log("📝 DelimiterAndKeyForm: Actualizando delimiter:", newDelimiter);
-    
+
     // 🚨 VALIDACIÓN ESTRICTA PARA CONVERSIONES A TXT
     if (isToTxtConversion() && newDelimiter && !ALLOWED_DELIMITERS_FOR_TO_TXT.includes(newDelimiter)) {
-      console.warn("⚠️ Delimiter no válido para conversión a TXT:", newDelimiter);
       // No actualizar el store si el delimitador no es válido
       setDelimiter(newDelimiter); // Solo actualizar estado local para mostrar en UI
       return;
@@ -88,7 +83,6 @@ export function DelimiterAndKeyForm() {
 
   const handleEncryptionKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newKey = e.target.value;
-    console.log("🔐 DelimiterAndKeyForm: Actualizando encryptionKey:", newKey);
     setEncryptionKey(newKey);
     updateConfig({ encryptionKey: newKey });
   };
