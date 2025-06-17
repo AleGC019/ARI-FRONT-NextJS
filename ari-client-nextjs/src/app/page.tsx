@@ -11,6 +11,8 @@ import { SplitViewer } from "@/components/split-viewer";
 import { ToastProvider } from "@/components/toast-provider";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { motion } from "motion/react";
+import { MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   FileText,
   Zap,
@@ -203,7 +205,7 @@ export default function Home() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <ConversionDirectionSelector />
                     <DelimiterAndKeyForm />
-                
+
                   </div>
                 </div>
               </BlurFade>
@@ -238,7 +240,7 @@ export default function Home() {
 
           {/* Data Viewer Section */}
           <BlurFade delay={0.7} direction="up">
-            <div className="space-y-6">
+            <div className="space-y-6 ">
               <div className="text-center space-y-2">
                 <h2 className="text-2xl font-bold text-foreground">
                   Vista Previa de Datos
@@ -250,6 +252,12 @@ export default function Home() {
               <SplitViewer />
             </div>
           </BlurFade>
+
+          {/* Botón que abre el modal */}
+          <BlurFade> <Button className="group relative overflow-hidden border-green-border/50 hover:text-foreground hover:bg-green-dark/30 hover:border-green-light/70 px-6 py-3 rounded-xl shadow-lg hover:shadow-green-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full h-12" onClick={() => setOpenGeo(true)}>
+            <MapPin className="h-4 w-4 mr-2" />
+            Seleccionar Ubicación
+          </Button> </BlurFade>
 
           <GeoLocationPickerModal open={openGeo} onOpenChange={setOpenGeo} />
         </div>
